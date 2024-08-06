@@ -9,11 +9,55 @@ generator client {
   provider = "prisma-client-js"
 }
 
-// Define your data model here
 model User {
-  id    Int    @id @default(autoincrement())
-  rollNo  String
-  email String @unique
-  
+  id               String      @id @unique
+  rollNo           String
+  password         String
+  type             UserType
+  Meeting          Meeting?    @relation(fields: [meetingId], references: [id])
+  meetingId        String?
+  ClausesFor       Clauses?    @relation(name: "For", fields: [clausesForId], references: [id])
+  clausesForId     String?
+  ClausesAgainst   Clauses?    @relation(name: "Against", fields: [clausesAgainstId], references: [id])
+  clausesAgainstId String?
+  ClausesAbstain   Clauses?    @relation(name: "Abstain", fields: [clausesAbstainId], references: [id])
+  clausesAbstainId String?
+  Responses        Responses[]
+}
 
+model Meeting {
+  id          String    @id @unique @default(uuid())
+  title       String
+  description String?
+  date        DateTime
+  attendes    User[]
+  clauses     Clauses[]
+}
+
+model Clauses {
+  id          String      @id @unique @default(uuid())
+  title       String
+  description String?
+  Meeting     Meeting?    @relation(fields: [meetingId], references: [id])
+  meetingId   String?
+  for         User[]      @relation(name: "For")
+  against     User[]      @relation(name: "Against")
+  abstain     User[]      @relation(name: "Abstain")
+  Responses   Responses[]
+}
+
+model Responses {
+  id        String   @id @unique @default(uuid())
+  response  String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  clauses   Clauses  @relation(fields: [clausesId], references: [id])
+  clausesId String
+}
+
+enum UserType {
+  LEGESLATOR
+  ADMIN
+  DEVELOPER
 }
