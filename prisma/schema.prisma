@@ -10,17 +10,17 @@ generator client {
 }
 
 model User {
-  id               String      @id @unique
-  rollNo           String
+  id               String      @id @unique @default(uuid())
+  rollNo           String       @unique
   password         String
-  type             UserType
+  type             UserType?
   Meeting          Meeting?    @relation(fields: [meetingId], references: [id])
   meetingId        String?
-  ClausesFor       Clauses?    @relation(name: "For", fields: [clausesForId], references: [id])
+  ClausesFor       Clauses[]   @relation(name: "For")
   clausesForId     String?
-  ClausesAgainst   Clauses?    @relation(name: "Against", fields: [clausesAgainstId], references: [id])
+  ClausesAgainst   Clauses[]    @relation(name: "Against")
   clausesAgainstId String?
-  ClausesAbstain   Clauses?    @relation(name: "Abstain", fields: [clausesAbstainId], references: [id])
+  ClausesAbstain   Clauses[]    @relation(name: "Abstain")
   clausesAbstainId String?
   Responses        Responses[]
 }
@@ -29,7 +29,7 @@ model Meeting {
   id          String    @id @unique @default(uuid())
   title       String
   description String?
-  date        DateTime
+  date        DateTime  //date of creation
   attendes    User[]
   clauses     Clauses[]
 }
