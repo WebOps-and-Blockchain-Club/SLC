@@ -22,19 +22,37 @@ export async function POST(request: NextRequest) {
       date: new Date(),
       description: body.description ? body.description : null,
     };
-    const meeting: Meeting = await prisma.meeting.create({
-      data: data,
-    });
 
-    prisma.$disconnect();
-    return NextResponse.json(
-      { message: "Meeting created successfully", meeting },
-      { status: 201 }
-    );
+    const activeUser = await prisma.user.findUnique({
+      where: {
+        rollNo: body.rollNo, //set this param to the request body.
+      },
+    });
+    const isAdmin = activeUser?.type == "ADMIN" ? true : false;
+
+
+    if (isAdmin)
+    {
+      const meeting: Meeting = await prisma.meeting.create({
+        data: data,
+      });
+  
+  
+      prisma.$disconnect();
+      return NextResponse.json(
+        { message: "Meeting created successfully", meeting },
+        { status: 201 }
+      );
+    }
+    else 
+    {
+      return NextResponse.json({message:"You are not authorized to create a meeting"}, {status:401});
+    }
+    
   } catch (err) {
     console.log(`[ERROR] ${err}`);
     return NextResponse.json(
-      { message: "Error creating meeting", err },
+      { message: "Error creating meeting" },
       { status: 500 }
     );
   }

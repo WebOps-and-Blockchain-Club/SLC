@@ -1,6 +1,11 @@
 import { PrismaClient } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 
+type pollData = {
+    clauseId:string,
+    userId:string,
+    option:string
+}
 
 export async function POST(request: NextRequest)
 {
@@ -10,22 +15,29 @@ export async function POST(request: NextRequest)
         const body = await request.json();
 
         //add the user to the selected option in the clause
-        const pollData = {
+        const pollData:pollData = {
             clauseId:body.clauseId,
             userId:body.userId,
-            option:body.option //for, abstain, against all small letters
+            option:body.option //ClausesFor, ClausesAgainst, ClausesAbstain
         }
 
-        //get the clause to add the user
-        const clause = await prisma.clauses.update({
+        const mapping = {
+            for:"ClausesFor",
+            against:"ClausesAgainst",
+            abstain:"ClausesAbstain"
+        }
+
+        //add the clause to the user
+        const user = await prisma.user.update({
             where:{
-                id:pollData.clauseId
+                id:pollData.userId
             },
-            data:{
+            data:
+            {
                 [pollData.option]:{
                     connect:{
-                        id:pollData.userId
-                    }
+                        id:pollData.clauseId
+                    }     
                 }
             }
         })
