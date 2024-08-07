@@ -15,6 +15,7 @@ export async function POST(request: NextRequest)
     {
         const prisma = new PrismaClient();
         const body = await request.json();
+        
 
         const clauseData:ClauseCreationData = {
             title:body.title,
@@ -22,12 +23,28 @@ export async function POST(request: NextRequest)
             meetingId:body.meetingId,
         }
 
-        const clause = await prisma.clauses.create({
-            data:clauseData
+        const activeUser = await prisma.user.findUnique({
+            where:{
+                rollNo:body.rollNo //set this param to the request body.
+            }
         })
 
-        prisma.$disconnect();
-        return NextResponse.json({message:"Clause created successfully", clause:clause}, {status:201});
+        const isAdmin = activeUser?.type == "ADMIN" ? true : false;
+
+        if (isAdmin)
+        {
+            const clause = await prisma.clauses.create({
+                data:clauseData
+            })
+            
+            prisma.$disconnect();
+            return NextResponse.json({message:"Clause created successfully", clause:clause}, {status:201});
+        }
+        else 
+        {
+            return NextResponse.json({message:"You are not authorized to create a clause"}, {status:401});
+        }
+
 
     }
 
